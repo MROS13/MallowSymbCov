@@ -1,0 +1,119 @@
+---
+title: <center> <h2> <b> Credit Cards Example </b> </h2> </center>
+author: <center> M. Rosário Oliveira, Diogo Pinheiro, and Lina Oliveira </center>
+date: <center> 01/07/2024 </center>
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, include = TRUE, fig.width = 4, fig.height = 4, fig.align = 'center')
+
+library(ggplot2)
+library(gridExtra)
+
+```
+
+
+&nbsp;
+&nbsp;
+
+
+The <em> Credit Card </em> dataset [1] refers to five interval-valued random variables measuring the monthly expenses of three credit card users on Food, Social Entertainment, Travel, Gas, and Clothes, during one year. Since the microdata are available, inferences can be made regarding their distribution.
+
+
+```{r, include = TRUE}
+#Import Files
+load("creditCardDataset.RData")
+source("baryCovFunctions.R", local = knitr::knit_global())
+
+library(ggplot2)
+library(gridExtra)
+
+creditCard.c <- creditCardDataset$creditCard.c #centres
+creditCard.r <- creditCardDataset$creditCard.r #ranges
+creditCard.latent <- creditCardDataset$creditCard.latent #latent microdata 
+creditCard.class <- creditCardDataset$creditCard.class #identifier of the credit card user
+
+```
+
+
+
+The latent variables' histograms suggest the use of a symmetric distribution. The symmetric triangular distribution was shown to be a good fit (see [2]).
+&nbsp;
+&nbsp;
+
+```{r, echo = FALSE, fig.width=10, fig.height=3}
+
+gplot1 <- ggplot2::ggplot(mapping = ggplot2::aes(creditCardDataset$creditCard.latent$Food)) + 
+  ggplot2::geom_histogram(color = "black", fill = "white", bins = 15) + ggplot2::xlab("Food") + ggplot2::ylab("")
+
+gplot2 <- ggplot2::ggplot(mapping = ggplot2::aes(creditCardDataset$creditCard.latent$Social)) + 
+  ggplot2::geom_histogram(color = "black", fill = "white", bins = 15) + ggplot2::xlab("Social") + ggplot2::ylab("")
+
+gplot3 <- ggplot2::ggplot(mapping = ggplot2::aes(creditCardDataset$creditCard.latent$Travel)) + 
+  ggplot2::geom_histogram(color = "black", fill = "white", bins = 15) + ggplot2::xlab("Travel") + ggplot2::ylab("")
+
+gplot4 <- ggplot2::ggplot(mapping = ggplot2::aes(creditCardDataset$creditCard.latent$Gas)) + 
+  ggplot2::geom_histogram(color = "black", fill = "white", bins = 15) + ggplot2::xlab("Gas") + ggplot2::ylab("")
+
+gplot5 <- ggplot2::ggplot(mapping = ggplot2::aes(creditCardDataset$creditCard.latent$Clothes)) + 
+  ggplot2::geom_histogram(color = "black", fill = "white", bins = 15) + ggplot2::xlab("Clothes") + ggplot2::ylab("")
+
+
+grid.arrange(gplot1, gplot2, gplot3, gplot4, gplot5, nrow = 1)
+
+```
+
+***
+
+
+```{r, include = TRUE}
+#Barycentre
+barycentre.c <- colMeans(creditCard.c) #26.09167  13.80153 183.96597  24.83944  49.31750 
+barycentre.r <- colMeans(creditCard.r) #9.146111 10.234722 13.010833  8.960000  11.888333
+
+#([21.52, 30.66], [8.68, 18.92], [177.46, 190.47], [20.36, 29.32], [43.37, 55.26])
+```
+
+
+Correlation based on the barycentre (assuming identically distributed and symmetric latent random variables)
+
+
+```{r, include = TRUE}
+delta <- 1/24 #symmetric triangular distribution
+
+covB <- var(creditCard.c) + delta * var(creditCard.r) #symbolic sample covariance
+
+corDiag <- diag(1/sqrt(diag(covB))) #diagonal matrix
+
+corB <- corDiag %*% covB %*% corDiag #symbolic sample correlation
+
+corB
+
+```
+
+
+
+
+
+<h3> Correlation Pairs Plot </h3>
+
+The top values correspond to the symbolic correlations derived in [2] and the bottom values are the symbolic correlations based on the barycentre (represented in green).
+
+```{r, include = TRUE, fig.width=8, fig.height = 8}
+pairSymb(C = creditCard.c, R = creditCard.r,
+         delta = 1/24, cor.print = TRUE, cor.cex = 1.2, 
+         palette = c("black", "red", "blue")[creditCard.class], B.print = TRUE)
+```
+
+
+&nbsp;
+
+<b> References </b>
+
+[1] L. Billard and E. Diday. From the statistics of data to the statistics of knowledge: Symbolic data analysis. Journal of the American Statistical Association, 98:470–487, 2003. URL https://ideas.repec.org/a/bes/jnlasa/v98y2003p470-487.html.
+
+
+[2] M. R. Oliveira, M. Vilela, A. Pacheco, R. Valadas, and P. Salvador. Extracting information from interval data using symbolic principal component analysis. Austrian Journal of Statistics, 46(3-4):79–87, 2017. doi:10.17713/ajs.v46i3-4.673.
+
+
